@@ -1,54 +1,39 @@
+# Anyon
+
+> **Based on [Vibe Kanban](https://github.com/BloopAI/vibe-kanban) by BloopAI**
+> Modified by **Slit** | Licensed under Apache 2.0
+
 <p align="center">
-  <a href="https://vibekanban.com">
-    <picture>
-      <source srcset="frontend/public/vibe-kanban-logo-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="frontend/public/vibe-kanban-logo.svg" media="(prefers-color-scheme: light)">
-      <img src="frontend/public/vibe-kanban-logo.svg" alt="Vibe Kanban Logo">
-    </picture>
-  </a>
+  <img src="frontend/public/anyon-logo.svg" alt="Anyon Logo" width="200">
 </p>
 
 <p align="center">Get 10X more out of Claude Code, Gemini CLI, Codex, Amp and other coding agents...</p>
-<p align="center">
-  <a href="https://www.npmjs.com/package/vibe-kanban"><img alt="npm" src="https://img.shields.io/npm/v/vibe-kanban?style=flat-square" /></a>
-  <a href="https://github.com/BloopAI/vibe-kanban/blob/main/.github/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/BloopAI/vibe-kanban/.github%2Fworkflows%2Fpublish.yml" /></a>
-  <a href="https://deepwiki.com/BloopAI/vibe-kanban"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
-</p>
-
-![](frontend/public/vibe-kanban-screenshot-overview.png)
 
 ## Overview
 
-AI coding agents are increasingly writing the world's code and human engineers now spend the majority of their time planning, reviewing, and orchestrating tasks. Vibe Kanban streamlines this process, enabling you to:
+AI coding agents are increasingly writing the world's code and human engineers now spend the majority of their time planning, reviewing, and orchestrating tasks. Anyon streamlines this process, enabling you to:
 
 - Easily switch between different coding agents
 - Orchestrate the execution of multiple coding agents in parallel or in sequence
 - Quickly review work and start dev servers
 - Track the status of tasks that your coding agents are working on
 - Centralise configuration of coding agent MCP configs
-- Open projects remotely via SSH when running Vibe Kanban on a remote server
-
-You can watch a video overview [here](https://youtu.be/TFT3KnZOOAk).
+- Open projects remotely via SSH when running Anyon on a remote server
 
 ## Installation
 
-Make sure you have authenticated with your favourite coding agent. A full list of supported coding agents can be found in the [docs](https://vibekanban.com/docs). Then in your terminal run:
+Make sure you have authenticated with your favourite coding agent. Then in your terminal run:
 
 ```bash
-npx vibe-kanban
+npx anyon
 ```
 
-## Documentation
+Or set your own server:
 
-Please head to the [website](https://vibekanban.com/docs) for the latest documentation and user guides.
-
-## Support
-
-We use [GitHub Discussions](https://github.com/BloopAI/vibe-kanban/discussions) for feature requests. Please open a discussion to create a feature request. For bugs please open an issue on this repo.
-
-## Contributing
-
-We would prefer that ideas and changes are first raised with the core team via [GitHub Discussions](https://github.com/BloopAI/vibe-kanban/discussions) or Discord, where we can discuss implementation details and alignment with the existing roadmap. Please do not open PRs without first discussing your proposal with the team.
+```bash
+export AY_SHARED_API_BASE=http://43.200.12.99:3000
+npx anyon
+```
 
 ## Development
 
@@ -92,35 +77,30 @@ pnpm build
 2. In the `npx-cli` folder run `npm pack`
 3. You can run your build with `npx [GENERATED FILE].tgz`
 
-
 ### Environment Variables
 
 The following environment variables can be configured at build time or runtime:
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `POSTHOG_API_KEY` | Build-time | Empty | PostHog analytics API key (disables analytics if empty) |
-| `POSTHOG_API_ENDPOINT` | Build-time | Empty | PostHog analytics endpoint (disables analytics if empty) |
-| `BACKEND_PORT` | Runtime | `0` (auto-assign) | Backend server port |
-| `FRONTEND_PORT` | Runtime | `3000` | Frontend development server port |
-| `HOST` | Runtime | `127.0.0.1` | Backend server host |
-| `DISABLE_WORKTREE_ORPHAN_CLEANUP` | Runtime | Not set | Disable git worktree cleanup (for debugging) |
+| `AY_SHARED_API_BASE` | Build/Runtime | - | Remote sync server URL |
+| `POSTHOG_API_KEY` | Build | - | Analytics key |
+| `BACKEND_PORT` | Runtime | auto | Backend server port |
+| `FRONTEND_PORT` | Runtime | 3000 | Frontend dev port |
 
-**Build-time variables** must be set when running `pnpm run build`. **Runtime variables** are read when the application starts.
+### Remote Server Deployment
 
-### Remote Deployment
+See [AWS_DEPLOYMENT_GUIDE.md](./AWS_DEPLOYMENT_GUIDE.md) for detailed instructions on deploying your own remote sync server.
 
-When running Vibe Kanban on a remote server (e.g., via systemctl, Docker, or cloud hosting), you can configure your editor to open projects via SSH:
+## License & Attribution
 
-1. **Access via tunnel**: Use Cloudflare Tunnel, ngrok, or similar to expose the web UI
-2. **Configure remote SSH** in Settings → Editor Integration:
-   - Set **Remote SSH Host** to your server hostname or IP
-   - Set **Remote SSH User** to your SSH username (optional)
-3. **Prerequisites**:
-   - SSH access from your local machine to the remote server
-   - SSH keys configured (passwordless authentication)
-   - VSCode Remote-SSH extension
+This project is based on **Vibe Kanban** by **BloopAI**:
+- Original: https://github.com/BloopAI/vibe-kanban
+- Modified by: **Slit** as **Anyon**
+- License: Apache 2.0
 
-When configured, the "Open in VSCode" buttons will generate URLs like `vscode://vscode-remote/ssh-remote+user@host/path` that open your local editor and connect to the remote server.
+See [LICENSE](./LICENSE) file for details.
 
-See the [documentation](https://vibekanban.com/docs/configuration-customisation/global-settings#remote-ssh-configuration) for detailed setup instructions.
+## Original Credits
+
+Vibe Kanban was created by the BloopAI team. This fork maintains the original Apache 2.0 license and includes modifications for Slit's use case.

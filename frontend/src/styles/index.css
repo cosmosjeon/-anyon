@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100..900;1,100..900&family=Noto+Emoji:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -24,7 +24,7 @@
     --_border: 214.3 31.8% 91.4%;
     --_input: var(--_border);
     --_ring: 222.2 84% 4.9%;
-    --_radius: 0.5rem;
+    --_radius: 0.75rem;
 
     /* Status (light) */
     --_success: 142.1 76.2% 36.3%;
@@ -174,7 +174,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-chivo-mono;
+    @apply bg-background text-foreground font-sans;
   }
 
   *:focus {

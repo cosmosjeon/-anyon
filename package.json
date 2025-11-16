@@ -1,9 +1,9 @@
 {
-  "name": "vibe-kanban",
-  "version": "0.0.117",
-  "private": true,
+  "name": "anyon",
+  "version": "0.0.1",
+  "private": false,
   "bin": {
-    "vibe-kanban": "npx-cli/bin/cli.js"
+    "anyon": "npx-cli/bin/cli.js"
   },
   "files": [
     "npx-cli/bin/cli.js",
@@ -29,6 +29,9 @@
     "prepack": "npm run build:npx",
     "remote:dev": "cd crates/remote && docker compose --env-file .env.remote up --build ; docker compose down -v",
     "remote:prepare-db": "cd crates/remote && bash scripts/prepare-db.sh"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

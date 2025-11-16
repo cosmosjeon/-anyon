@@ -10,7 +10,7 @@ pub use v7::{
 use crate::services::config::versions::v7;
 
 fn default_git_branch_prefix() -> String {
-    "vk".to_string()
+    "anyon".to_string()
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]

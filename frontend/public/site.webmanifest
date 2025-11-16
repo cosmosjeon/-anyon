@@ -1,15 +1,15 @@
 {
-  "name": "Vibe Kanban",
-  "short_name": "VK",
+  "name": "Anyon",
+  "short_name": "AY",
   "icons": [
     {
-      "src": "/favicon-vk-light.svg",
+      "src": "/favicon-ay-light.svg",
       "sizes": "any",
       "purpose": "any",
       "type": "image/svg+xml"
     },
     {
-      "src": "/favicon-vk-light-maskable.svg",
+      "src": "/favicon-ay-light-maskable.svg",
       "sizes": "any",
       "purpose": "maskable",
       "type": "image/svg+xml"

@@ -9,16 +9,6 @@ import enSettings from './locales/en/settings.json';
 import enProjects from './locales/en/projects.json';
 import enTasks from './locales/en/tasks.json';
 import enOrganization from './locales/en/organization.json';
-import jaCommon from './locales/ja/common.json';
-import jaSettings from './locales/ja/settings.json';
-import jaProjects from './locales/ja/projects.json';
-import jaTasks from './locales/ja/tasks.json';
-import jaOrganization from './locales/ja/organization.json';
-import esCommon from './locales/es/common.json';
-import esSettings from './locales/es/settings.json';
-import esProjects from './locales/es/projects.json';
-import esTasks from './locales/es/tasks.json';
-import esOrganization from './locales/es/organization.json';
 import koCommon from './locales/ko/common.json';
 import koSettings from './locales/ko/settings.json';
 import koProjects from './locales/ko/projects.json';
@@ -32,20 +22,6 @@ const resources = {
     projects: enProjects,
     tasks: enTasks,
     organization: enOrganization,
-  },
-  ja: {
-    common: jaCommon,
-    settings: jaSettings,
-    projects: jaProjects,
-    tasks: jaTasks,
-    organization: jaOrganization,
-  },
-  es: {
-    common: esCommon,
-    settings: esSettings,
-    projects: esProjects,
-    tasks: esTasks,
-    organization: esOrganization,
   },
   ko: {
     common: koCommon,

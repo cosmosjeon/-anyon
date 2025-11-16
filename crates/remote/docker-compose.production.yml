@@ -1,0 +1,43 @@
+services:
+  remote-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: remote
+      POSTGRES_USER: remote
+      POSTGRES_PASSWORD: remote
+    volumes:
+      - remote-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U remote -d remote" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    ports:
+      - "5432:5432"
+
+  remote-server:
+    # Use pre-built image from Docker Hub instead of building locally
+    image: jeondo1108/anyon-remote:latest
+    platform: linux/amd64
+    depends_on:
+      remote-db:
+        condition: service_healthy
+    environment:
+      SERVER_DATABASE_URL: postgres://remote:remote@remote-db:5432/remote
+      SERVER_LISTEN_ADDR: ${SERVER_LISTEN_ADDR:-0.0.0.0:8081}
+      SERVER_ACTIVITY_CHANNEL: ${SERVER_ACTIVITY_CHANNEL:-activity}
+      SERVER_ACTIVITY_BROADCAST_SHARDS: ${SERVER_ACTIVITY_BROADCAST_SHARDS:-16}
+      SERVER_ACTIVITY_BROADCAST_CAPACITY: ${SERVER_ACTIVITY_BROADCAST_CAPACITY:-512}
+      SERVER_PUBLIC_BASE_URL: ${SERVER_PUBLIC_BASE_URL:?set in .env.remote}
+      GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID:?set in .env.remote}
+      GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET:?set in .env.remote}
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
+      VIBEKANBAN_REMOTE_JWT_SECRET: ${VIBEKANBAN_REMOTE_JWT_SECRET:?set in .env.remote}
+      LOOPS_EMAIL_API_KEY: ${LOOPS_EMAIL_API_KEY:-}
+    ports:
+      - "3000:8081"
+
+volumes:
+  remote-db-data:

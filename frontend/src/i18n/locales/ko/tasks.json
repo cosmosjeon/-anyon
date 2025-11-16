@@ -7,19 +7,19 @@
     "sharedToggleTooltip": "공유 콘텐츠 표시/숨기기"
   },
   "actionsMenu": {
-    "attempt": "Attempt",
-    "createNewAttempt": "Create new attempt",
-    "createSubtask": "Create subtask",
+    "attempt": "시도",
+    "createNewAttempt": "새 시도 만들기",
+    "createSubtask": "하위 작업 만들기",
     "share": "작업 공유",
     "reassign": "재할당",
     "stopShare": "공유 중지",
-    "duplicate": "Duplicate",
+    "duplicate": "복제",
     "editBranchName": "브랜치 이름 편집",
     "gitActions": "Git 작업",
-    "openInIde": "Open attempt in IDE",
-    "task": "Task",
-    "viewProcesses": "View processes",
-    "viewRelatedTasks": "View related tasks"
+    "openInIde": "IDE에서 시도 열기",
+    "task": "작업",
+    "viewProcesses": "프로세스 보기",
+    "viewRelatedTasks": "관련 작업 보기"
   },
   "editBranchName": {
     "dialog": {
@@ -40,9 +40,9 @@
     },
     "agent": "Agent",
     "clickToCopy": "작업 트리 경로 복사",
-    "copied": "Copied!",
-    "createSubtask": "Create Subtask",
-    "diffs": "Diffs",
+    "copied": "복사됨!",
+    "createSubtask": "하위 작업 만들기",
+    "diffs": "변경사항",
     "gitActions": "Git 작업",
     "labels": {
       "agent": "에이전트",
@@ -51,21 +51,21 @@
       "diffs": "변경사항",
       "summaryAndActions": "요약 및 작업"
     },
-    "newAttempt": "New Attempt",
-    "openInEditor": "Open in {{editor}}",
-    "path": "Path",
+    "newAttempt": "새 시도",
+    "openInEditor": "{{editor}}에서 변경사항 보기",
+    "path": "경로",
     "pauseDev": "Dev 일시정지",
-    "preview": "Preview",
-    "startDev": "Start Dev",
-    "stopAttempt": "Stop Attempt",
-    "stopDev": "Stop Dev",
-    "stopping": "Stopping...",
-    "viewDevLogs": "View dev server logs",
-    "viewHistory": "View attempt history",
-    "tryAgain": "Try Again",
+    "preview": "미리보기",
+    "startDev": "Dev 시작",
+    "stopAttempt": "시도 중지",
+    "stopDev": "Dev 중지",
+    "stopping": "중지 중...",
+    "viewDevLogs": "개발 서버 로그 보기",
+    "viewHistory": "시도 기록 보기",
+    "tryAgain": "다시 시도",
     "runSetup": "설정 실행",
     "setupHelpText": "{{agent}}이(가) 올바르게 설정되지 않았습니다. '설정 실행'을 클릭하여 설치하고 로그인하세요.",
-    "devScriptMissingTooltip": "To start the dev server, add a dev script to this project"
+    "devScriptMissingTooltip": "개발 서버를 시작하려면 이 프로젝트에 개발 스크립트를 추가하세요"
   },
   "stopShareDialog": {
     "title": "작업 공유 중지",
@@ -126,9 +126,9 @@
     }
   },
   "attemptHeaderActions": {
-    "diffs": "Diffs",
-    "preview": "Preview",
-    "relatedTasks": "Related tasks"
+    "diffs": "변경사항",
+    "preview": "미리보기",
+    "relatedTasks": "관련 작업"
   },
   "branches": {
     "changeTarget": {
@@ -142,26 +142,26 @@
     }
   },
   "createAttemptDialog": {
-    "baseBranch": "Base branch",
-    "creating": "Creating...",
-    "description": "Start a new attempt with a coding agent. A git worktree and task branch will be created.",
-    "error": "Failed to create attempt. Please try again.",
-    "loadingBranches": "Loading branches...",
-    "selectBranch": "Select branch",
-    "start": "Start",
-    "title": "Create Attempt"
+    "baseBranch": "기본 브랜치",
+    "creating": "생성 중...",
+    "description": "코딩 에이전트와 함께 새 시도를 시작합니다. git 워크트리와 작업 브랜치가 생성됩니다.",
+    "error": "시도 생성에 실패했습니다. 다시 시도해 주세요.",
+    "loadingBranches": "브랜치 로딩 중...",
+    "selectBranch": "브랜치 선택",
+    "start": "시작",
+    "title": "시도 만들기"
   },
   "diff": {
-    "collapseAll": "Collapse all diffs",
-    "errorLoadingDiff": "Failed to load diff: {{error}}",
-    "expandAll": "Expand all diffs",
+    "collapseAll": "모든 변경사항 접기",
+    "errorLoadingDiff": "변경사항 로드 실패: {{error}}",
+    "expandAll": "모든 변경사항 펼치기",
     "ignoreWhitespace": "공백 변경 무시",
-    "filesChanged_one": "{{count}} file changed",
-    "filesChanged_other": "{{count}} files changed",
-    "noChanges": "No changes have been made yet",
+    "filesChanged_one": "{{count}}개 파일 변경됨",
+    "filesChanged_other": "{{count}}개 파일 변경됨",
+    "noChanges": "아직 변경사항이 없습니다",
     "viewModes": {
-      "inline": "Inline view",
-      "split": "Split view"
+      "inline": "인라인 보기",
+      "split": "분할 보기"
     }
   },
   "empty": {
@@ -256,8 +256,8 @@
       "stopAndEditButton": "개발 서버 중지 및 문제 해결",
       "title": "실행 중인 개발 서버 없음"
     },
-    "selectAttempt": "Select an attempt to see preview",
-    "title": "Preview",
+    "selectAttempt": "미리보기를 보려면 시도를 선택하세요",
+    "title": "미리보기",
     "toolbar": {
       "copyUrl": "URL 복사",
       "openInTab": "새 탭에서 열기",
@@ -274,22 +274,22 @@
     }
   },
   "processes": {
-    "agent": "Agent:",
-    "backToList": "Back to list",
-    "completed": "Completed: {{date}}",
-    "deleted": "Deleted",
-    "deletedTooltip": "Deleted by restore: timeline was restored to a checkpoint and later executions were removed",
-    "detailsTitle": "Process Details",
-    "errorLoadingDetails": "Failed to load process details. Please try again.",
-    "errorLoadingUpdates": "Failed to load live updates for processes.",
-    "exit": "Exit: {{code}}",
-    "loading": "Loading execution processes...",
-    "loadingDetails": "Loading process details...",
-    "noProcesses": "No execution processes found for this attempt.",
-    "processId": "Process ID: {{id}}",
-    "reconnecting": "Reconnecting...",
-    "selectAttempt": "Select an attempt to view execution processes.",
-    "started": "Started: {{date}}"
+    "agent": "에이전트:",
+    "backToList": "목록으로 돌아가기",
+    "completed": "완료: {{date}}",
+    "deleted": "삭제됨",
+    "deletedTooltip": "복원으로 삭제됨: 타임라인이 체크포인트로 복원되어 이후 실행이 제거되었습니다",
+    "detailsTitle": "프로세스 세부정보",
+    "errorLoadingDetails": "프로세스 세부정보 로드에 실패했습니다. 다시 시도해 주세요.",
+    "errorLoadingUpdates": "프로세스 실시간 업데이트 로드에 실패했습니다.",
+    "exit": "종료: {{code}}",
+    "loading": "실행 프로세스 로딩 중...",
+    "loadingDetails": "프로세스 세부정보 로딩 중...",
+    "noProcesses": "이 시도에 대한 실행 프로세스가 없습니다.",
+    "processId": "프로세스 ID: {{id}}",
+    "reconnecting": "재연결 중...",
+    "selectAttempt": "실행 프로세스를 보려면 시도를 선택하세요.",
+    "started": "시작: {{date}}"
   },
   "rebase": {
     "common": {
@@ -313,40 +313,40 @@
     }
   },
   "taskHeader": {
-    "closePanel": "Close panel",
-    "deleteTask": "Delete task",
-    "editTask": "Edit task"
+    "closePanel": "패널 닫기",
+    "deleteTask": "작업 삭제",
+    "editTask": "작업 편집"
   },
   "navigateToParent": "상위 작업 시도로 이동",
   "taskPanel": {
-    "attemptsCount": "Attempts ({{count}})",
-    "errorLoadingAttempts": "Failed to load attempts",
-    "loadingAttempts": "Loading attempts...",
-    "noAttempts": "No attempts yet",
-    "noTaskSelected": "No task selected"
+    "attemptsCount": "시도 ({{count}})",
+    "errorLoadingAttempts": "시도 로드에 실패했습니다",
+    "loadingAttempts": "시도 로딩 중...",
+    "noAttempts": "아직 시도가 없습니다",
+    "noTaskSelected": "선택된 작업이 없습니다"
   },
   "todos": {
     "title_one": "Todos ({{count}})",
     "title_other": "Todos ({{count}})"
   },
   "toolbar": {
-    "actions": "Actions",
-    "noAttempts": "No attempts yet",
-    "startAttempt": "Start Attempt",
-    "startFirstAttempt": "Start your first attempt to begin working on this task"
+    "actions": "작업",
+    "noAttempts": "아직 시도가 없습니다",
+    "startAttempt": "시도 시작",
+    "startFirstAttempt": "이 작업을 시작하려면 첫 번째 시도를 시작하세요"
   },
   "viewProcessesDialog": {
-    "title": "Execution processes"
+    "title": "실행 프로세스"
   },
   "viewRelatedTasksDialog": {
-    "title": "Related tasks",
-    "empty": "No related tasks for this attempt",
-    "error": "Failed to load related tasks",
-    "tasksCount": "Tasks ({{count}})",
+    "title": "관련 작업",
+    "empty": "이 시도에 대한 관련 작업이 없습니다",
+    "error": "관련 작업 로드에 실패했습니다",
+    "tasksCount": "작업 ({{count}})",
     "columns": {
-      "title": "Title",
-      "description": "Description",
-      "status": "Status"
+      "title": "제목",
+      "description": "설명",
+      "status": "상태"
     }
   },
   "showcases": {
