@@ -4,7 +4,8 @@
 
 **작성일:** 2025-11-17
 **버전:** 1.0
-**상태:** 설계 단계
+**상태:** 설계 단계 (구현 일정·자원은 `docs/IMPLEMENTATION_PLAN.md` 참조)
+**통합 책임:** Zero-Git 전체 흐름 중 Plan Stage 설계만 다루며, 배포 시 요구되는 AI/GitHub 토큰은 `docs/IMPLEMENTATION_PLAN.md#0-프로그램-개요`의 체크리스트에 따릅니다.
 
 ---
 
@@ -116,6 +117,11 @@ Description: "API가 느려요"
 ```
 
 ### 3.2 상세 단계
+
+#### 운영 요구사항 (로컬/서버 공통)
+- **AI API 토큰**: `PLAN_STAGE_AI_PROVIDER`(예: `claude`)와 `PLAN_STAGE_AI_API_KEY` 환경변수를 통해 서버가 직접 질문/요약을 생성할 수 있어야 합니다. 외부 MCP 에이전트 없이도 Plan Stage가 동작해야 하므로 토큰은 백엔드 프로세스에 제공됩니다.
+- **GitHub 통합 토큰**: Plan Summary를 Zero-Git 플로우에 전달할 때 동일한 서버 프로세스가 GitHub와 통신하므로, `ZERO_GIT_GITHUB_TOKEN`(또는 GitHub App) 환경변수를 설정하고 scope(`repo`, `pull_request`)를 부여합니다.
+- **Feature Flag**: `ENABLE_PLAN_STAGE=true` 일 때만 새 UI/API를 노출하여 기존 사용자의 혼란을 최소화합니다.
 
 #### Step 1: Todo → Plan 전환
 

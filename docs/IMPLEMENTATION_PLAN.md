@@ -4,8 +4,9 @@
 
 **작성일:** 2025-11-17
 **버전:** 1.0
-**예상 기간:** 6주
+**예상 기간:** 7.5주 (Phase 0 1.5주 + Phase 1 2주 + Phase 2 1주 + Phase 3 2주 + Week 6 통합 테스트 1주)
 **팀:** Backend (1명), Frontend (1명)
+**문서 역할:** 구현 순서·리소스 계획을 다루며 시스템 구조는 `ZERO_GIT_ARCHITECTURE.md`, KPI/ROI는 `ZERO_GIT_SUMMARY.md`에 위임합니다.
 
 ---
 
@@ -19,6 +20,22 @@
 6. [성공 지표](#6-성공-지표)
 
 ---
+
+## 0. 프로그램 개요
+
+### 0.1 타임라인 & 리소스 매핑
+| Phase | 기간 | 주요 담당 | 핵심 산출물 | 선행 조건 / 게이트 |
+|-------|------|-----------|-------------|----------------------|
+| Phase 0 – Plan Stage | 1.5주 | Backend(70%), Frontend(30%) | Plan DB 스키마, TaskClarificationService, PlanTaskDialog | `PLAN_STAGE_DESIGN.md` 확정, SQLx 테스트 통과 |
+| Phase 1 – 핵심 자동화 | 2주 | Backend 집중 | GitAutomationService, Container/Server 통합, Complete Dialog (FE 보조) | Phase 0 Plan Summary 데이터가 실제 태스크에 반영되고 Kanban이 planning 컬럼을 지원 |
+| Phase 2 – Webhook 연동 | 1주 | Backend 60%, Frontend 40% | GitHub Webhook Handler, SSE UI 업데이트 | Phase 1 API 안정화, GitHub 앱 구성 완료 |
+| Phase 3 – 고급 기능 | 2주 | Backend 50%, Frontend 50% | 자동 Rebase, AI 충돌 보조, 알림/대시보드 | Phase 2 Webhook 모니터링 지표 확보 |
+| Week 6 – 통합 테스트 & 배포 준비 | 1주 | 전원 | 회귀/부하 테스트, 문서화, 베타 배포 | 앞선 Phase 산출물 feature-freeze |
+
+### 0.2 교차 문서 책임 구분
+- `ZERO_GIT_ARCHITECTURE.md`: 시스템 경계, 데이터 플로우, 계약(API/DB 스키마)의 참조 사양만 유지하고, 구현 일정은 본 문서를 단일 소스로 사용합니다.
+- `ZERO_GIT_SUMMARY.md`: KPI, ROI, 사용자 가치 제안과 같은 경영 요약만 수록하며, 기술/일정 수치는 본 문서를 인용합니다.
+- 각 Phase 완료 시 `docs/CHANGELOG.md`에 링크를 추가하여 추적성을 높입니다.
 
 ## 1. 실행 요약
 
@@ -34,9 +51,9 @@
 - 사용자 만족도: **+50%** (설문조사)
 
 ### 투자 대비 효과 (ROI)
-- 개발 시간: 6주
-- 절감 효과: 팀원 1명당 주당 2시간 절약
-- Break-even: 5명 팀 기준 6주 후
+- 개발 시간: 7.5주 (전 Phase + Week 6 테스트 포함)
+- 절감 효과: 팀원 1명당 주당 5시간 절약 (Plan Stage 3h + Zero-Git 2h)
+- Break-even: 5명 팀 기준 4주 후 (Phase 0 완료 직후 가치 창출 시작)
 
 ---
 
@@ -1680,17 +1697,46 @@ cargo test -p server webhooks::tests::test_github_pr_merge_webhook
 
 ## Phase 3: 고급 기능 (2주)
 
-### Week 4-5: 자동 Rebase & 충돌 해결 (Day 16-25)
+### Week 4: 자동 Rebase 파이프라인 (Day 16-20)
+**목표:** PR 생성 전에 최신 main을 반영하고, 실패 시 사용자에게 명확한 조치 가이드를 제공
 
-*(상세 계획은 Phase 1, 2 완료 후 작성)*
+**작업 항목:**
+1. `GitAutomationService::prepare_branch_for_pr` 추가 (fetch + rebase)
+2. `git_rebase_logs` 테이블 및 telemetry 대시보드 드릴다운
+3. Complete Task API 확장: `auto_rebase: bool`, `rebase_status` 응답 포함
+4. Frontend CompleteDialog에 “Auto rebase before PR” 토글 및 실패 알림 추가
+5. 테스트: 성공/실패 단위 테스트 5개, 통합 테스트 2개 (충돌 재현)
 
-**주요 기능:**
-- PR 생성 전 자동 rebase
-- 충돌 감지 및 AI에게 해결 요청
-- 브라우저 Push 알림
-- 팀 활동 대시보드
+### Week 5: AI 충돌 보조 & 알림/대시보드 (Day 21-25)
+**목표:** 충돌을 빠르게 파악하고 팀 가시성을 높이는 도구 제공
+
+**작업 항목:**
+1. `ConflictAssistantService` (충돌 diff + Plan Summary → AI 제안) 및 `conflict_suggestions` 테이블
+2. Frontend Conflict Dialog + 추천 패치 다운로드 기능
+3. Notification Service (브라우저 Push + 선택적 Slack Webhook), feature flag `ENABLE_CONFLICT_NOTIFS`
+4. Team Activity Dashboard + `/api/projects/:id/activity` 엔드포인트
+5. 테스트: 충돌 재현 2건, Notification opt-in/out 시나리오 2개, Dashboard API 단위 테스트 3개
+
+### Phase 3 완료 게이트
+- Feature Flag 기본 OFF, Beta 팀에서 검증 후 GA 결정
+- `docs/CHANGELOG.md` Phase 3 항목 업데이트 및 스크린샷/로그 첨부
+- 회귀: Phase 1/2 테스트 스위트 + 신규 Rebase/Conflict 시나리오
 
 ---
+
+## 4. 테스트 & QA 전략
+
+| Phase/게이트 | 필수 테스트 | 자동화 여부 | 책임 | 비고 |
+|--------------|-------------|-------------|------|------|
+| Phase 0 완료 | `cargo test -p db services` (핵심 모델), `npm run test -- PlanTaskDialog` | 부분 자동화 | Backend / Frontend | AI Executor 스텁을 사용하여 로컬에서만 검증 |
+| Phase 1 Week 1 | GitAutomationService 단위 테스트 15개, Container smoke test | 자동 | Backend | 레거시 테스트 병렬 실행 금지 (CI 병목 방지) |
+| Phase 1 Week 2 | CompleteTaskAttempt API 통합 테스트 5개, FE CompleteDialog storybook QA | 혼합 | Backend / Frontend | 회귀 테스트는 Phase 0 스위트 재사용 |
+| Phase 2 | Webhook handler replay 테스트, SSE E2E 테스트 (Playwright 1개) | 자동 | Backend / Frontend | GitHub sandbox 레포에서 payload 캡처 |
+| Phase 3 | 프리뷰 환경 멀티 사용자 시나리오 3개, 충돌 재현 2개 | 수동 + 자동 | 전원 | 실패 시 Phase 3 deliverable scope 조정 |
+| Week 6 | 회귀 테스트, 성능 테스트(동시 5 tasks), 문서 리뷰 | 자동 + 수동 | 전원 | 테스트 통과하지 않으면 GA 연기 |
+
+- 모든 테스트 명령은 `scripts/test-matrix.md`에서 추적하고, 실패 시 동일한 명령으로 재현 가능한지 기록합니다.
+- FE/BE 단독 리소스 구간을 명확히 하기 위해 테스트 실행 창을 사전에 스케줄링 합니다.
 
 ## 5. 위험 관리
 

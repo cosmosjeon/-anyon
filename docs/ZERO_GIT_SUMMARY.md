@@ -4,8 +4,9 @@
 
 **작성일:** 2025-11-17
 **업데이트:** 2025-11-17 (Plan Stage 추가)
-**예상 기간:** 7.5주 (Plan Stage 1.5주 + Zero-Git 6주)
+**예상 기간:** 7.5주 (Phase 0 1.5주 + Phase 1 2주 + Phase 2 1주 + Phase 3 2주 + Week 6 통합 테스트 1주)
 **투입 인력:** Backend 1명, Frontend 1명
+**문서 역할:** KPI, 사용자 가치, ROI 요약을 제공하며 세부 설계/일정은 각각 `ZERO_GIT_ARCHITECTURE.md`, `IMPLEMENTATION_PLAN.md`를 참조합니다.
 
 ---
 
@@ -101,103 +102,20 @@ Frontend                  Backend                    GitHub
 
 ## 📋 구현 계획 (7.5주)
 
-### Phase 0: 🆕 AI Plan Stage (1.5주, 우선순위 최상)
-**목표:** Task 개발 전 요구사항 명확화로 재작업 50% 감소
+이 요약은 경영진 시야를 위한 **마일스톤/가치 중심** 뷰입니다. 날짜·담당자·작업 세부는 `IMPLEMENTATION_PLAN.md`를 참고하세요.
 
-**Why First?**
-- Zero-Git과 독립적으로 작동
-- 요구사항 품질 향상으로 모든 Phase에 긍정적 영향
-- 즉시 사용자 가치 전달
+| Phase | 기간 | 비즈니스 임팩트 | 주요 산출물 | KPI 게이트 |
+|-------|------|----------------|-------------|------------|
+| Phase 0 – AI Plan Stage | 1.5주 | 재작업률 50% 감소, 요구사항 명확도 95% 달성 | Plan DB/서비스, Planning 컬럼 UI, 요약 전달 파이프 | Plan Summary 품질 리뷰 + SQLx/FE smoke test |
+| Phase 1 – 핵심 Git 자동화 | 2주 | Git 명령어 0회, Task 시작 30초 | GitAutomationService, Container/Server 통합, Complete Dialog | Start/Complete API 통합테스트 + 로컬 Git sandbox 성공 |
+| Phase 2 – Webhook & 실시간 | 1주 | PR Merge→Done 100% 자동화 | GitHub Webhook Handler, SSE 업데이트 | GitHub sandbox 이벤트 리플레이 10건 무오류 |
+| Phase 3 – 고급 기능 | 2주 | 충돌 처리 시간 50% 단축, 팀 가시성 향상 | 자동 Rebase, AI conflict assist, 알림/대시보드 | Feature flag 하에 dogfooding, 충돌 재현 2건 해결 |
+| Week 6 – 테스트 & 배포 | 1주 | Beta→GA 결정 | 회귀/부하 테스트, 문서 패키징, 롤백 플레이북 | 전 스위트 통과 + 운영 승인 |
 
-**Week 0.5 (Day 1-3):**
-- ✅ Database Migration (plan_questions, plan_conversations 테이블)
-- ✅ TaskClarificationService 구현
-  - `generate_questions()` - AI 질문 생성
-  - `save_answer()` - 답변 저장
-  - `generate_plan_summary()` - 요약 생성
-- ✅ Models: PlanQuestion, PlanConversation
-
-**Week 1 (Day 4-8):**
-- ✅ API Endpoints (3개)
-  - POST /api/tasks/{id}/start-planning
-  - POST /api/tasks/{id}/plan-answers
-  - POST /api/tasks/{id}/complete-planning
-- ✅ Frontend: PlanTaskDialog UI
-- ✅ Kanban Board: 5개 컬럼 (Todo, Planning, InProgress, InReview, Done)
-
-**Week 1.5 (Day 9-10):**
-- ✅ Zero-Git 통합: Plan Summary → AI Executor
-- ✅ E2E 테스트
-
-**산출물:**
-- AI 기반 Task 명확화
-- 명확한 요구사항 문서 자동 생성
-- 재작업 50% 감소
-
----
-
-### Phase 1: 핵심 Git 자동화 (2주)
-**목표:** Task 시작/완료 시 Git 자동화
-
-**Week 1:**
-- ✅ Database Migration (git_sync_logs 테이블)
-- ✅ Git Automation Service 구현
-  - `sync_before_start()` - 자동 pull
-  - `push_branch()` - 자동 push
-  - `auto_commit()` - 자동 커밋
-- ✅ Container Service 통합
-
-**Week 2:**
-- ✅ Complete Task API 엔드포인트
-- ✅ PR 자동 생성 로직
-- ✅ Frontend: Complete Dialog UI
-- ✅ 통합 테스트
-
-**산출물:**
-- 자동 Sync on Start
-- 자동 Push on Complete
-- PR 자동 생성
-
----
-
-### Phase 2: Webhook 연동 (1주)
-**목표:** GitHub 이벤트 자동 처리
-
-**Week 3:**
-- ✅ GitHub Webhook Handler
-- ✅ Signature 검증
-- ✅ PR Merge → Task Done 자동화
-- ✅ Frontend 실시간 업데이트 (SSE)
-- ✅ 설정 가이드 문서
-
-**산출물:**
-- Webhook 연동
-- 자동 상태 동기화
-- 실시간 UI 업데이트
-
----
-
-### Phase 3: 고급 기능 (2주)
-**목표:** 사용자 경험 극대화
-
-**Week 4-5:**
-- ✅ 자동 Rebase (PR 생성 전)
-- ✅ AI 충돌 해결
-- ✅ 브라우저 Push 알림
-- ✅ 팀 활동 대시보드
-
-**산출물:**
-- 충돌 자동 해결
-- 실시간 알림
-- 성능 최적화
-
----
-
-### Week 6: 테스트 & 배포
-- ✅ 통합 테스트 완료
-- ✅ 문서 완성
-- ✅ Beta 테스트
-- ✅ GA 배포
+보조 지침
+- Phase 간 의존성(Plan Summary → Git Automation → Webhook Telemetry → Conflict Resolution)을 명시적으로 관리합니다.
+- Backend 1명/Frontend 1명 구성을 유지하기 위해 FE 집중 주(Phase0/Phase3)와 BE 집중 주(Phase1/2)를 번갈아 배치했습니다.
+- 모든 마일스톤 결과는 `docs/CHANGELOG.md`와 KPI 대시보드에 바로 반영합니다.
 
 ---
 
