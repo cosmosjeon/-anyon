@@ -42,6 +42,7 @@
 
 | 기능 | Before (수동) | After (자동) |
 |------|--------------|-------------|
+| 요구사항 명확화 | 불명확 → 재작업 발생 | 🆕 **AI Plan Stage** ✨ |
 | 최신 코드 동기화 | `git pull origin main` | "Start" 버튼 클릭 시 자동 |
 | 브랜치 생성 | `git checkout -b feature` | Worktree 생성 시 자동 |
 | 코드 커밋 | `git add . && git commit` | AI 완료 시 자동 |
@@ -49,6 +50,7 @@
 | PR 생성 | GitHub UI에서 수동 | "Complete" 버튼 시 자동 |
 | PR Merge 후 상태 | 수동으로 "Done" 표시 | Webhook으로 자동 |
 | **Git 명령어 사용** | **9회** | **0회** ✨ |
+| **재작업 발생** | **30%** | **15%** (Plan으로 50% 감소) ✨ |
 
 ---
 
@@ -151,32 +153,91 @@
                                         └──────────────────┘
 ```
 
-### 3.2 개선된 워크플로우 (자동)
+### 3.2 개선된 워크플로우 (자동 + Plan Stage)
 
 ```
 1. [사용자] Task 생성
-2. [사용자] "Start" 버튼 클릭
+2. 🆕 [사용자] "Plan" 버튼 클릭
+   └─► [AI] Task 분석 및 명확화 질문 생성
+   └─► [사용자] 질문에 답변
+   └─► [AI] 명확한 요구사항 문서 생성
+   └─► [시스템] 상태 → "Planning"
+3. [사용자] "Start Development" 버튼 클릭
    └─► [시스템] 자동 git fetch + pull
    └─► [시스템] Worktree 생성 (최신 main 기준)
    └─► [시스템] 브랜치 자동 push (upstream 설정)
-3. [AI] 코드 작성
-4. [사용자] "Complete" 버튼 클릭
+   └─► [시스템] 상태 → "In Progress"
+4. [AI] 명확화된 요구사항 기반 코드 작성
+5. [사용자] "Complete" 버튼 클릭
    └─► [시스템] 자동 커밋
    └─► [시스템] 자동 push
    └─► [시스템] PR 자동 생성
    └─► [시스템] 상태 → "In Review"
-5. [사용자] GitHub에서 "Merge" 클릭
+6. [사용자] GitHub에서 "Merge" 클릭
    └─► [Webhook] Anyon으로 이벤트 전송
    └─► [시스템] 상태 → "Done" 자동 변경
    └─► [시스템] 팀원들에게 알림
 
-✅ 사용자는 2번과 4번만!
+✅ 사용자는 2, 3, 5번만!
 ✅ Git 명령어 0회!
+✅ 재작업 50% 감소 (명확한 요구사항)!
 ```
 
 ---
 
 ## 4. 핵심 컴포넌트
+
+### 4.0 🆕 Task Clarification Service
+
+**책임:**
+- Task 분석 및 애매한 부분 감지
+- AI 기반 명확화 질문 생성
+- 사용자 답변 수집 및 저장
+- 최종 요구사항 문서 생성
+
+**위치:** `crates/services/src/services/task_clarification.rs` (신규)
+
+**주요 함수:**
+
+```rust
+pub struct TaskClarificationService {
+    db: DBService,
+    executor: Box<dyn Executor>,
+}
+
+impl TaskClarificationService {
+    /// Task 분석 및 질문 생성
+    pub async fn generate_questions(
+        &self,
+        task: &Task,
+    ) -> Result<Vec<ClarificationQuestion>, ClarificationError>;
+
+    /// 사용자 답변 저장
+    pub async fn save_answer(
+        &self,
+        task_id: Uuid,
+        question_id: &str,
+        answer: &str,
+    ) -> Result<(), ClarificationError>;
+
+    /// 최종 요구사항 문서 생성
+    pub async fn generate_plan_summary(
+        &self,
+        task: &Task,
+    ) -> Result<String, ClarificationError>;
+
+    /// Plan 완료 여부 확인
+    pub async fn is_plan_complete(
+        &self,
+        task_id: Uuid,
+    ) -> Result<bool, ClarificationError>;
+}
+```
+
+**통합 포인트:**
+- **Container Service**: Plan Summary를 AI Executor에 context로 전달
+- **Task Model**: `plan_summary` 필드 추가
+- **Frontend**: PlanTaskDialog 컴포넌트
 
 ### 4.1 Git Automation Service
 
@@ -446,6 +507,76 @@ sequenceDiagram
 
 ### 6.1 데이터베이스 스키마 변경
 
+#### 6.1.0 🆕 Task Status 확장
+
+```sql
+-- TaskStatus enum에 'planning' 추가
+-- Tasks 테이블 확장
+ALTER TABLE tasks ADD COLUMN plan_summary TEXT;
+ALTER TABLE tasks ADD COLUMN plan_started_at TIMESTAMP;
+ALTER TABLE tasks ADD COLUMN plan_completed_at TIMESTAMP;
+```
+
+**Rust Enum:**
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+pub enum TaskStatus {
+    #[serde(rename = "todo")]
+    Todo,
+
+    #[serde(rename = "planning")]  // 🆕
+    Planning,
+
+    #[serde(rename = "inprogress")]
+    InProgress,
+
+    #[serde(rename = "inreview")]
+    InReview,
+
+    #[serde(rename = "done")]
+    Done,
+}
+```
+
+#### 6.1.0.1 🆕 새로운 테이블: `plan_questions`
+
+```sql
+CREATE TABLE plan_questions (
+    id TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL,
+    question_id TEXT NOT NULL,
+    question_text TEXT NOT NULL,
+    category TEXT NOT NULL,
+    required BOOLEAN DEFAULT FALSE,
+    suggested_answers TEXT,  -- JSON array
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+    UNIQUE(task_id, question_id)
+);
+
+CREATE INDEX idx_plan_questions_task ON plan_questions(task_id);
+```
+
+#### 6.1.0.2 🆕 새로운 테이블: `plan_conversations`
+
+```sql
+CREATE TABLE plan_conversations (
+    id TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL,
+    question_id TEXT NOT NULL,
+    question_text TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    answered_by TEXT,
+    answered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+    UNIQUE(task_id, question_id)
+);
+
+CREATE INDEX idx_plan_conversations_task ON plan_conversations(task_id);
+```
+
 #### 6.1.1 새로운 테이블: `git_sync_logs`
 
 ```sql
@@ -500,6 +631,80 @@ CREATE INDEX idx_webhook_events_processed
 ```
 
 ### 6.2 API 엔드포인트
+
+#### 6.2.0 🆕 Plan Stage 엔드포인트
+
+**6.2.0.1 Plan 시작**
+
+```
+POST /api/tasks/{id}/start-planning
+
+Request: {}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "task_status": "planning",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "어떤 인증 방식을 원하시나요?",
+        "category": "authentication",
+        "required": true,
+        "suggested_answers": ["OAuth", "Email/Password", "소셜"]
+      }
+    ]
+  }
+}
+```
+
+**6.2.0.2 답변 저장**
+
+```
+POST /api/tasks/{id}/plan-answers
+
+Request:
+{
+  "answers": [
+    {
+      "question_id": "q1",
+      "answer": "Google OAuth"
+    }
+  ]
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "saved_count": 1,
+    "is_complete": true,
+    "plan_summary": "## 명확화된 요구사항\n..."
+  }
+}
+```
+
+**6.2.0.3 Plan 완료 및 개발 시작**
+
+```
+POST /api/tasks/{id}/complete-planning
+
+Request: {}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "task_status": "inprogress",
+    "plan_summary": "...",
+    "sync_info": {
+      "synced": true,
+      "commits_pulled": 3
+    }
+  }
+}
+```
 
 #### 6.2.1 Task 시작 (Enhanced)
 
@@ -633,6 +838,81 @@ AUTO_RESOLVE_CONFLICTS=false  # Phase 3에서 구현
 ---
 
 ## 7. 구현 계획
+
+### Phase 0: 🆕 Plan Stage (1.5주, 우선순위 최상)
+
+**목표:** Task 개발 전 AI 명확화로 재작업 50% 감소
+
+**Why First?**
+- Zero-Git과 독립적으로 작동
+- 요구사항 품질 향상으로 모든 Phase에 긍정적 영향
+- 사용자 가치 즉시 전달 가능
+
+#### Week 0.5: Database & Service (Day 1-3)
+
+**Tasks:**
+1. Database Migration
+   - 파일: `crates/db/migrations/20251119000000_add_planning_stage.sql`
+   - TaskStatus enum에 `Planning` 추가
+   - `plan_questions`, `plan_conversations` 테이블 생성
+   - Tasks 테이블: `plan_summary`, `plan_started_at`, `plan_completed_at` 추가
+
+2. Models 구현
+   - `crates/db/src/models/plan_question.rs`
+   - `crates/db/src/models/plan_conversation.rs`
+   - CRUD 함수 구현
+
+3. TaskClarificationService
+   - 파일: `crates/services/src/services/task_clarification.rs`
+   - `generate_questions()` 구현
+   - `save_answer()` 구현
+   - `generate_plan_summary()` 구현
+
+**산출물:**
+- ✅ Database schema
+- ✅ TaskClarificationService (500 lines)
+- ✅ 단위 테스트 (15개, 80% coverage)
+
+#### Week 1: API & Frontend (Day 4-8)
+
+**Tasks:**
+1. API Endpoints
+   - `POST /api/tasks/{id}/start-planning`
+   - `POST /api/tasks/{id}/plan-answers`
+   - `POST /api/tasks/{id}/complete-planning`
+   - TypeScript type generation
+
+2. Frontend Components
+   - Kanban Board: 5개 컬럼 (Todo, Planning, InProgress, InReview, Done)
+   - `PlanTaskDialog.tsx` 컴포넌트
+   - Auto-save 기능
+   - Markdown 렌더링 (Plan Summary)
+
+3. Integration
+   - TaskCard에 "Plan" 버튼 추가
+   - SSE 실시간 업데이트
+
+**산출물:**
+- ✅ 3개 API endpoints
+- ✅ Plan Dialog UI
+- ✅ 통합 테스트 (5개)
+
+#### Week 1.5: Zero-Git 통합 (Day 9-10)
+
+**Tasks:**
+1. Container Service 수정
+   - `start_task_attempt`에 Plan Summary 전달
+   - AI Executor에 context로 추가
+
+2. End-to-End 테스트
+   - Todo → Plan → InProgress → Complete → Done
+   - 재작업률 측정
+
+**산출물:**
+- ✅ Plan Stage 완전 통합
+- ✅ 문서 업데이트
+
+---
 
 ### Phase 1: 핵심 자동화 (2주, 우선순위 1)
 

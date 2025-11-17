@@ -26,6 +26,8 @@
 사용자가 Git 명령어를 **한 번도 사용하지 않고** Anyon 칸반 보드만으로 협업 개발을 완료할 수 있는 시스템 구축
 
 ### 핵심 성과 지표 (KPI)
+- 🆕 **재작업 발생률: 30% → 15%** (Plan Stage로 50% 감소)
+- 🆕 **AI 개발 정확도: 70% → 90%** (명확한 요구사항)
 - Git 명령어 사용 횟수: **9회 → 0회**
 - Task 시작 시간: **3분 → 30초** (자동 sync)
 - PR 생성 시간: **5분 → 10초** (자동화)
@@ -35,6 +37,513 @@
 - 개발 시간: 6주
 - 절감 효과: 팀원 1명당 주당 2시간 절약
 - Break-even: 5명 팀 기준 6주 후
+
+---
+
+## Phase 0: 🆕 Plan Stage - AI Task Clarification (1.5주)
+
+### 개요
+
+**목표:** Task 개발 전 AI가 요구사항을 명확히 하여 재작업 50% 감소
+
+**Why First?**
+- Zero-Git과 독립적으로 작동
+- 요구사항 품질 향상으로 모든 후속 Phase에 긍정적 영향
+- 즉시 사용자 가치 전달 가능
+- 빠른 ROI (2주 내)
+
+**핵심 기능:**
+1. AI 기반 Task 분석 및 질문 생성
+2. 대화형 Q&A 인터페이스
+3. 명확화된 요구사항 문서 자동 생성
+4. AI Executor에 context 전달
+
+---
+
+### Week 0.5: Database & Service (Day 1-3)
+
+#### Day 1: Database Migration
+
+**담당:** Backend
+**목표:** Plan Stage 데이터 구조 생성
+
+**작업 항목:**
+
+1. **Migration 파일 생성**
+   ```bash
+   # 파일: crates/db/migrations/20251119000000_add_planning_stage.sql
+   ```
+
+   **내용:**
+   ```sql
+   -- TaskStatus enum에 'planning' 추가
+   -- Tasks 테이블 확장
+   ALTER TABLE tasks ADD COLUMN plan_summary TEXT;
+   ALTER TABLE tasks ADD COLUMN plan_started_at TIMESTAMP;
+   ALTER TABLE tasks ADD COLUMN plan_completed_at TIMESTAMP;
+
+   -- Plan Questions 테이블
+   CREATE TABLE plan_questions (
+       id TEXT PRIMARY KEY,
+       task_id TEXT NOT NULL,
+       question_id TEXT NOT NULL,
+       question_text TEXT NOT NULL,
+       category TEXT NOT NULL,
+       required BOOLEAN DEFAULT FALSE,
+       suggested_answers TEXT,  -- JSON array
+       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+       FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+       UNIQUE(task_id, question_id)
+   );
+
+   CREATE INDEX idx_plan_questions_task ON plan_questions(task_id);
+
+   -- Plan Conversations 테이블
+   CREATE TABLE plan_conversations (
+       id TEXT PRIMARY KEY,
+       task_id TEXT NOT NULL,
+       question_id TEXT NOT NULL,
+       question_text TEXT NOT NULL,
+       answer TEXT NOT NULL,
+       answered_by TEXT,
+       answered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+       FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+       UNIQUE(task_id, question_id)
+   );
+
+   CREATE INDEX idx_plan_conversations_task ON plan_conversations(task_id);
+   CREATE INDEX idx_plan_conversations_answered ON plan_conversations(answered_at DESC);
+   ```
+
+2. **TaskStatus Enum 업데이트**
+   ```rust
+   // 파일: crates/db/src/models/task.rs
+
+   #[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+   pub enum TaskStatus {
+       #[serde(rename = "todo")]
+       Todo,
+
+       #[serde(rename = "planning")]  // 🆕
+       Planning,
+
+       #[serde(rename = "inprogress")]
+       InProgress,
+
+       #[serde(rename = "inreview")]
+       InReview,
+
+       #[serde(rename = "done")]
+       Done,
+   }
+   ```
+
+**산출물:**
+- ✅ Migration SQL 파일
+- ✅ TaskStatus enum 업데이트
+- ✅ Migration 테스트
+
+**테스트:**
+```bash
+sqlx migrate run
+cargo test -p db task_status
+```
+
+---
+
+#### Day 2: Database Models
+
+**담당:** Backend
+**목표:** Plan Stage 모델 구현
+
+**작업 항목:**
+
+1. **PlanQuestion 모델**
+   ```rust
+   // 파일: crates/db/src/models/plan_question.rs
+
+   #[derive(Debug, Clone, FromRow, Serialize, Deserialize, TS)]
+   pub struct PlanQuestion {
+       pub id: Uuid,
+       pub task_id: Uuid,
+       pub question_id: String,
+       pub question_text: String,
+       pub category: QuestionCategory,
+       pub required: bool,
+       pub suggested_answers: Option<Vec<String>>,
+       pub created_at: DateTime<Utc>,
+   }
+
+   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+   pub enum QuestionCategory {
+       Authentication,
+       Security,
+       Features,
+       Performance,
+       UI,
+       Integration,
+       Other,
+   }
+
+   impl PlanQuestion {
+       pub async fn create(pool: &SqlitePool, data: CreatePlanQuestion) -> Result<Self, SqlxError>;
+       pub async fn find_by_task(pool: &SqlitePool, task_id: Uuid) -> Result<Vec<Self>, SqlxError>;
+       pub async fn delete_by_task(pool: &SqlitePool, task_id: Uuid) -> Result<(), SqlxError>;
+   }
+   ```
+
+2. **PlanConversation 모델**
+   ```rust
+   // 파일: crates/db/src/models/plan_conversation.rs
+
+   #[derive(Debug, Clone, FromRow, Serialize, Deserialize, TS)]
+   pub struct PlanConversation {
+       pub id: Uuid,
+       pub task_id: Uuid,
+       pub question_id: String,
+       pub question_text: String,
+       pub answer: String,
+       pub answered_by: Option<String>,
+       pub answered_at: DateTime<Utc>,
+   }
+
+   impl PlanConversation {
+       pub async fn create(pool: &SqlitePool, data: CreatePlanConversation) -> Result<Self, SqlxError>;
+       pub async fn find_by_task(pool: &SqlitePool, task_id: Uuid) -> Result<Vec<Self>, SqlxError>;
+       pub async fn update_answer(pool: &SqlitePool, id: Uuid, answer: &str) -> Result<(), SqlxError>;
+   }
+   ```
+
+3. **Task 모델 확장**
+   ```rust
+   // 파일: crates/db/src/models/task.rs
+
+   impl Task {
+       pub async fn update_plan_summary(
+           pool: &SqlitePool,
+           id: Uuid,
+           summary: &str,
+       ) -> Result<(), SqlxError>;
+
+       pub async fn mark_plan_started(
+           pool: &SqlitePool,
+           id: Uuid,
+       ) -> Result<(), SqlxError>;
+
+       pub async fn mark_plan_completed(
+           pool: &SqlitePool,
+           id: Uuid,
+       ) -> Result<(), SqlxError>;
+   }
+   ```
+
+**산출물:**
+- ✅ PlanQuestion 모델 (150 lines)
+- ✅ PlanConversation 모델 (120 lines)
+- ✅ Task 모델 확장
+- ✅ 단위 테스트 (10개)
+
+**테스트:**
+```bash
+cargo test -p db plan_question
+cargo test -p db plan_conversation
+```
+
+---
+
+#### Day 3: TaskClarificationService
+
+**담당:** Backend
+**목표:** AI 명확화 서비스 핵심 로직 구현
+
+**작업 항목:**
+
+1. **서비스 구조**
+   ```rust
+   // 파일: crates/services/src/services/task_clarification.rs
+
+   pub struct TaskClarificationService {
+       db: DBService,
+       executor: Box<dyn Executor>,
+   }
+
+   impl TaskClarificationService {
+       pub fn new(db: DBService, executor: Box<dyn Executor>) -> Self;
+
+       pub async fn generate_questions(&self, task: &Task) -> Result<Vec<ClarificationQuestion>, ClarificationError>;
+       pub async fn save_answer(&self, task_id: Uuid, question_id: &str, answer: &str) -> Result<(), ClarificationError>;
+       pub async fn generate_plan_summary(&self, task: &Task) -> Result<String, ClarificationError>;
+       pub async fn is_plan_complete(&self, task_id: Uuid) -> Result<bool, ClarificationError>;
+   }
+   ```
+
+2. **질문 생성 로직 구현** (상세 내용은 PLAN_STAGE_DESIGN.md 참조)
+
+3. **요약 생성 로직 구현** (상세 내용은 PLAN_STAGE_DESIGN.md 참조)
+
+**산출물:**
+- ✅ TaskClarificationService (500 lines)
+- ✅ AI Prompt 템플릿
+- ✅ 단위 테스트 (15개, 80% coverage)
+
+**테스트:**
+```bash
+cargo test -p services task_clarification
+```
+
+---
+
+### Week 1: API & Frontend (Day 4-8)
+
+#### Day 4-5: API Endpoints
+
+**담당:** Backend
+**목표:** Plan Stage API 구현
+
+**작업 항목:**
+
+1. **start_planning 엔드포인트**
+   ```rust
+   // 파일: crates/server/src/routes/tasks.rs
+
+   pub async fn start_planning(
+       State(deployment): State<DeploymentImpl>,
+       Path(task_id): Path<Uuid>,
+   ) -> Result<Json<ApiResponse<StartPlanningResponse>>, ApiError>;
+   ```
+
+2. **save_plan_answers 엔드포인트**
+   ```rust
+   pub async fn save_plan_answers(
+       State(deployment): State<DeploymentImpl>,
+       Path(task_id): Path<Uuid>,
+       Json(request): Json<SavePlanAnswersRequest>,
+   ) -> Result<Json<ApiResponse<SavePlanAnswersResponse>>, ApiError>;
+   ```
+
+3. **complete_planning 엔드포인트**
+   ```rust
+   pub async fn complete_planning(
+       State(deployment): State<DeploymentImpl>,
+       Path(task_id): Path<Uuid>,
+   ) -> Result<Json<ApiResponse<CompletePlanningResponse>>, ApiError>;
+   ```
+
+4. **라우터 등록**
+   ```rust
+   pub fn task_routes() -> Router<DeploymentImpl> {
+       Router::new()
+           .route("/:id/start-planning", post(start_planning))      // 🆕
+           .route("/:id/plan-answers", post(save_plan_answers))     // 🆕
+           .route("/:id/complete-planning", post(complete_planning)) // 🆕
+           /* ... */
+   }
+   ```
+
+5. **TypeScript 타입 생성**
+   ```bash
+   npm run generate-types
+   ```
+
+**산출물:**
+- ✅ 3개 API endpoints (300 lines)
+- ✅ Request/Response 타입
+- ✅ TypeScript 타입 정의
+- ✅ API 테스트 (10개)
+
+**테스트:**
+```bash
+cargo test -p server routes::tasks::plan
+```
+
+---
+
+#### Day 6-8: Frontend Implementation
+
+**담당:** Frontend
+**목표:** Plan Stage UI 구현
+
+**작업 항목:**
+
+1. **Kanban Board 업데이트**
+   ```tsx
+   // 파일: frontend/src/components/kanban/KanbanBoard.tsx
+
+   const columns: ColumnConfig[] = [
+     { id: 'todo', title: 'To Do', color: 'gray' },
+     { id: 'planning', title: '📝 Plan', color: 'blue' },  // 🆕
+     { id: 'inprogress', title: 'In Progress', color: 'yellow' },
+     { id: 'inreview', title: 'In Review', color: 'purple' },
+     { id: 'done', title: 'Done', color: 'green' },
+   ];
+   ```
+
+2. **PlanTaskDialog 컴포넌트**
+   ```tsx
+   // 파일: frontend/src/components/dialogs/PlanTaskDialog.tsx
+   // 상세 구현은 PLAN_STAGE_DESIGN.md 참조
+   ```
+
+   **주요 기능:**
+   - AI 질문 로드 및 표시
+   - 답변 입력 (텍스트/선택)
+   - Auto-save (500ms debounce)
+   - Plan Summary Markdown 렌더링
+   - "Start Development" 버튼
+
+3. **TaskCard 버튼 로직**
+   ```tsx
+   // 파일: frontend/src/components/tasks/TaskCard.tsx
+
+   const renderActionButton = () => {
+     switch (task.status) {
+       case 'todo':
+         return <Button onClick={() => setShowPlanDialog(true)}>📝 Plan</Button>;
+       case 'planning':
+         return <Button onClick={() => setShowPlanDialog(true)}>✏️ Continue Planning</Button>;
+       /* ... */
+     }
+   };
+   ```
+
+4. **API Client 함수**
+   ```typescript
+   // 파일: frontend/src/lib/api.ts
+
+   export const startPlanning = async (taskId: string): Promise<StartPlanningResponse>;
+   export const savePlanAnswers = async (taskId: string, request: SavePlanAnswersRequest): Promise<SavePlanAnswersResponse>;
+   export const completePlanning = async (taskId: string): Promise<CompletePlanningResponse>;
+   ```
+
+**산출물:**
+- ✅ Kanban Board 5개 컬럼
+- ✅ PlanTaskDialog 컴포넌트 (400 lines)
+- ✅ API client 함수
+- ✅ UI 테스트 (TypeScript 컴파일)
+
+---
+
+### Week 1.5: Integration & Testing (Day 9-10)
+
+#### Day 9: Zero-Git Integration
+
+**담당:** Backend
+**목표:** Plan Summary를 AI Executor에 전달
+
+**작업 항목:**
+
+1. **start_task_attempt 수정**
+   ```rust
+   // 파일: crates/server/src/routes/task_attempts.rs
+
+   pub async fn start_task_attempt(
+       /* ... */
+   ) -> Result<...> {
+       let task = /* ... */;
+
+       // 🆕 Plan Summary를 AI context에 추가
+       let mut context = vec![];
+       if let Some(plan_summary) = &task.plan_summary {
+           context.push(ExecutionContext {
+               role: "system".to_string(),
+               content: format!(
+                   "## Requirements from Planning Phase\n\n{}",
+                   plan_summary
+               ),
+           });
+       }
+
+       // AI Executor 호출
+       let execution = executor.execute_coding_agent_initial(ExecutionRequest {
+           prompt: task.description.clone().unwrap_or_default(),
+           context,  // 🆕 Plan Summary 포함
+           /* ... */
+       }).await?;
+
+       /* ... */
+   }
+   ```
+
+**산출물:**
+- ✅ Plan Summary → AI Executor 통합
+- ✅ 통합 테스트
+
+---
+
+#### Day 10: End-to-End Testing
+
+**담당:** Backend + Frontend
+**목표:** 전체 플로우 테스트 및 버그 수정
+
+**작업 항목:**
+
+1. **E2E 테스트 시나리오**
+   ```
+   Scenario 1: 로그인 기능
+   1. Todo에 Task 생성
+   2. "Plan" 버튼 클릭
+   3. AI 질문 3개 생성 확인
+   4. 답변 입력 (auto-save 확인)
+   5. Plan Summary 생성 확인
+   6. "Start Development" 클릭
+   7. InProgress로 이동 확인
+   8. AI가 Plan Summary 기반 코드 작성 확인
+   ```
+
+2. **성능 테스트**
+   - 질문 생성 시간: < 3초
+   - 요약 생성 시간: < 5초
+   - Auto-save 지연: < 500ms
+
+3. **문서 업데이트**
+   - User Guide: Plan Stage 사용법
+   - Architecture: Plan Stage 통합 다이어그램
+   - README: Plan Stage 소개
+
+**산출물:**
+- ✅ E2E 테스트 시나리오 (5개)
+- ✅ 성능 벤치마크
+- ✅ 사용자 가이드
+- ✅ 버그 수정
+
+**테스트:**
+```bash
+# Backend
+cargo test --workspace
+
+# Frontend
+npm run type-check
+npm run lint
+
+# E2E
+npm run test:e2e
+```
+
+---
+
+### Phase 0 산출물 요약
+
+**코드:**
+- ✅ Database: 2개 테이블 + Task 확장
+- ✅ Backend: TaskClarificationService (500 lines) + 3 API endpoints (300 lines)
+- ✅ Frontend: PlanTaskDialog (400 lines) + Kanban 확장
+
+**테스트:**
+- ✅ 단위 테스트: 35개 (80% coverage)
+- ✅ 통합 테스트: 5개
+- ✅ E2E 테스트: 5 시나리오
+
+**문서:**
+- ✅ PLAN_STAGE_DESIGN.md (완성)
+- ✅ User Guide: Plan Stage 사용법
+- ✅ API Documentation
+
+**성공 지표:**
+- ✅ 재작업 발생률: 30% → 15%
+- ✅ AI 질문 생성: < 3초
+- ✅ 사용자 만족도: 4.5/5 이상
 
 ---
 
