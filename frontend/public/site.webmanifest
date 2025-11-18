@@ -1,17 +1,11 @@
 {
-  "name": "Anyon",
-  "short_name": "AY",
+  "name": "ANYON",
+  "short_name": "ANYON",
   "icons": [
     {
-      "src": "/favicon-ay-light.svg",
+      "src": "/favicon.svg",
       "sizes": "any",
       "purpose": "any",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/favicon-ay-light-maskable.svg",
-      "sizes": "any",
-      "purpose": "maskable",
       "type": "image/svg+xml"
     }
   ],

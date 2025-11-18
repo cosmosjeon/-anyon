@@ -1,0 +1,17 @@
+{
+  "title": "문서",
+  "subtitle": "프로젝트 문서를 관리하세요",
+  "documentList": "문서리스트",
+  "noDocuments": "아직 문서가 없습니다",
+  "categories": {
+    "planning": {
+      "title": "기획"
+    },
+    "design": {
+      "title": "디자인"
+    },
+    "technology": {
+      "title": "기술"
+    }
+  }
+}

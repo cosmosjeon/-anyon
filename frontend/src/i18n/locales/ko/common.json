@@ -66,11 +66,20 @@
     "currentBadge": " (현재)"
   },
   "signOut": "로그아웃",
+  "settings": "설정",
+  "sidebar": {
+    "projects": "프로젝트",
+    "organizations": "조직",
+    "tabs": {
+      "documents": "문서",
+      "development": "개발"
+    }
+  },
   "devMode": {
     "banner": "개발 모드 - 개발 빌드입니다"
   },
   "oauth": {
-    "title": "Vibe Kanban 로그인",
+    "title": "ANYON 로그인",
     "description": "로그인하여 조직에 참여하고 팀과 작업을 공유하세요",
     "continueWithGitHub": "GitHub로 계속",
     "continueWithGoogle": "Google로 계속",

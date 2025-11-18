@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Settings, Cpu, Server, X, FolderOpen, Building2 } from 'lucide-react';
+import { Settings, Cpu, Server, X, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
@@ -16,10 +16,6 @@ const settingsNavigation = [
   {
     path: 'projects',
     icon: FolderOpen,
-  },
-  {
-    path: 'organizations',
-    icon: Building2,
   },
   {
     path: 'agents',
@@ -87,21 +83,17 @@ export function SettingsLayout() {
                       end
                       className={({ isActive }) =>
                         cn(
-                          'flex items-start gap-3 px-3 py-2 text-sm transition-colors',
-                          'hover:text-accent-foreground',
+                          'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
                           isActive
-                            ? 'text-primary-foreground'
-                            : 'text-secondary-foreground'
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
                         )
                       }
                     >
-                      <Icon className="h-4 w-4 mt-0.5 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium">
-                          {t(`settings.layout.nav.${item.path}`)}
-                        </div>
-                        <div>{t(`settings.layout.nav.${item.path}Desc`)}</div>
-                      </div>
+                      <Icon className="h-5 w-5" />
+                      <span className="font-medium">
+                        {t(`settings.layout.nav.${item.path}`)}
+                      </span>
                     </NavLink>
                   );
                 })}

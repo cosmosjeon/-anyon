@@ -9,11 +9,13 @@ import enSettings from './locales/en/settings.json';
 import enProjects from './locales/en/projects.json';
 import enTasks from './locales/en/tasks.json';
 import enOrganization from './locales/en/organization.json';
+import enDocs from './locales/en/docs.json';
 import koCommon from './locales/ko/common.json';
 import koSettings from './locales/ko/settings.json';
 import koProjects from './locales/ko/projects.json';
 import koTasks from './locales/ko/tasks.json';
 import koOrganization from './locales/ko/organization.json';
+import koDocs from './locales/ko/docs.json';
 
 const resources = {
   en: {
@@ -22,6 +24,7 @@ const resources = {
     projects: enProjects,
     tasks: enTasks,
     organization: enOrganization,
+    docs: enDocs,
   },
   ko: {
     common: koCommon,
@@ -29,6 +32,7 @@ const resources = {
     projects: koProjects,
     tasks: koTasks,
     organization: koOrganization,
+    docs: koDocs,
   },
 };
 
