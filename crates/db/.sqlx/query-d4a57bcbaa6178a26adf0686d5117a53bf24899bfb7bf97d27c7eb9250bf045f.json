@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM plan_questions WHERE task_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "d4a57bcbaa6178a26adf0686d5117a53bf24899bfb7bf97d27c7eb9250bf045f"
+}

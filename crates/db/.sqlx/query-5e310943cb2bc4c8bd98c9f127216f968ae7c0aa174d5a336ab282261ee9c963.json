@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO plan_conversations (\n                    id,\n                    task_id,\n                    question_id,\n                    question_text,\n                    answer,\n                    answered_by\n                ) VALUES ($1, $2, $3, $4, $5, $6)\n                RETURNING\n                    id as \"id!: Uuid\",\n                    task_id as \"task_id!: Uuid\",\n                    question_id,\n                    question_text,\n                    answer,\n                    answered_by,\n                    answered_at as \"answered_at!: DateTime<Utc>\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "task_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "question_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "question_text",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "answer",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "answered_by",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "answered_at!: DateTime<Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "5e310943cb2bc4c8bd98c9f127216f968ae7c0aa174d5a336ab282261ee9c963"
+}

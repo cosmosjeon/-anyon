@@ -31,6 +31,7 @@ use services::services::{
     image::{ImageError, ImageService},
     pr_monitor::PrMonitorService,
     share::{RemoteSync, RemoteSyncHandle, ShareConfig, SharePublisher},
+    task_clarification::ClarificationExecutor,
     worktree_manager::WorktreeError,
 };
 use sqlx::{Error as SqlxError, types::Uuid};
@@ -107,6 +108,8 @@ pub trait Deployment: Clone + Send + Sync + 'static {
     fn approvals(&self) -> &Approvals;
 
     fn drafts(&self) -> &DraftsService;
+
+    fn clarification_executor(&self) -> Arc<dyn ClarificationExecutor>;
 
     fn auth_context(&self) -> &AuthContext;
 

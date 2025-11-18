@@ -183,6 +183,8 @@
 ✅ 재작업 50% 감소 (명확한 요구사항)!
 ```
 
+> **2025-11-XX 업데이트:** PlanTaskDialog UI, Kanban `planning` 컬럼, TaskPanel 요약 표시, 그리고 `/start-planning`, `/plan-answers`, `/complete-planning` API가 배포되어 위 워크플로우의 Planning 구간이 실제 제품에 반영되었습니다.
+
 ---
 
 ## 4. 핵심 컴포넌트

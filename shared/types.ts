@@ -46,17 +46,23 @@ export type UpdateTag = { tag_name: string | null, content: string | null, };
 
 export type TagSearchParams = { search: string | null, };
 
-export type TaskStatus = "todo" | "inprogress" | "inreview" | "done" | "cancelled";
+export type TaskStatus = "todo" | "planning" | "inprogress" | "inreview" | "done" | "cancelled";
 
-export type Task = { id: string, project_id: string, title: string, description: string | null, status: TaskStatus, parent_task_attempt: string | null, shared_task_id: string | null, created_at: string, updated_at: string, };
+export type Task = { id: string, project_id: string, title: string, description: string | null, status: TaskStatus, plan_summary: string | null, plan_started_at: string | null, plan_completed_at: string | null, parent_task_attempt: string | null, shared_task_id: string | null, created_at: string, updated_at: string, };
 
-export type TaskWithAttemptStatus = { has_in_progress_attempt: boolean, has_merged_attempt: boolean, last_attempt_failed: boolean, executor: string, id: string, project_id: string, title: string, description: string | null, status: TaskStatus, parent_task_attempt: string | null, shared_task_id: string | null, created_at: string, updated_at: string, };
+export type TaskWithAttemptStatus = { has_in_progress_attempt: boolean, has_merged_attempt: boolean, last_attempt_failed: boolean, executor: string, id: string, project_id: string, title: string, description: string | null, status: TaskStatus, plan_summary: string | null, plan_started_at: string | null, plan_completed_at: string | null, parent_task_attempt: string | null, shared_task_id: string | null, created_at: string, updated_at: string, };
 
 export type TaskRelationships = { parent_task: Task | null, current_attempt: TaskAttempt, children: Array<Task>, };
 
 export type CreateTask = { project_id: string, title: string, description: string | null, status: TaskStatus | null, parent_task_attempt: string | null, image_ids: Array<string> | null, shared_task_id: string | null, };
 
 export type UpdateTask = { title: string | null, description: string | null, status: TaskStatus | null, parent_task_attempt: string | null, image_ids: Array<string> | null, };
+
+export type QuestionCategory = "authentication" | "security" | "features" | "performance" | "ui" | "integration" | "other";
+
+export type ClarificationQuestion = { id: string, question: string, category: QuestionCategory, required: boolean, suggestedAnswers: Array<string> | null, };
+
+export type ClarificationAnswer = { question_id: string, answer: string, };
 
 export type SharedTask = { id: string, remote_project_id: string, title: string, description: string | null, status: TaskStatus, assignee_user_id: string | null, assignee_first_name: string | null, assignee_last_name: string | null, assignee_username: string | null, version: bigint, last_event_seq: bigint | null, created_at: Date, updated_at: Date, };
 
@@ -155,6 +161,18 @@ export type RenameBranchResponse = { branch: string, };
 export type AssignSharedTaskRequest = { new_assignee_user_id: string | null, version: bigint | null, };
 
 export type AssignSharedTaskResponse = { shared_task: SharedTask, };
+
+export type StartPlanningResponse = { task_status: TaskStatus, questions: Array<ClarificationQuestion>, existing_answers: Array<PlanAnswerInput>, plan_summary: string | null, };
+
+export type PlanAnswerInput = { question_id: string, answer: string, };
+
+export type SavePlanAnswersRequest = { answers: Array<PlanAnswerInput>, };
+
+export type SavePlanAnswersResponse = { saved_count: number, is_complete: boolean, plan_summary: string | null, };
+
+export type PlanningSyncInfo = { synced: boolean, commits_pulled: number, };
+
+export type CompletePlanningResponse = { task_status: TaskStatus, plan_summary: string, sync_info: PlanningSyncInfo | null, };
 
 export type ShareTaskResponse = { shared_task_id: string, };
 

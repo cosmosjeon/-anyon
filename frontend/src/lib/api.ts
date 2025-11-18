@@ -28,6 +28,10 @@ import {
   Tag,
   TagSearchParams,
   TaskWithAttemptStatus,
+  StartPlanningResponse,
+  SavePlanAnswersRequest,
+  SavePlanAnswersResponse,
+  CompletePlanningResponse,
   AssignSharedTaskResponse,
   UpdateProject,
   UpdateTask,
@@ -388,6 +392,33 @@ export const tasksApi = {
       method: 'POST',
     });
     return handleApiResponse<ShareTaskResponse>(response);
+  },
+
+  startPlanning: async (taskId: string): Promise<StartPlanningResponse> => {
+    const response = await makeRequest(`/api/tasks/${taskId}/start-planning`, {
+      method: 'POST',
+    });
+    return handleApiResponse<StartPlanningResponse>(response);
+  },
+
+  savePlanAnswers: async (
+    taskId: string,
+    data: SavePlanAnswersRequest
+  ): Promise<SavePlanAnswersResponse> => {
+    const response = await makeRequest(`/api/tasks/${taskId}/plan-answers`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return handleApiResponse<SavePlanAnswersResponse>(response);
+  },
+
+  completePlanning: async (
+    taskId: string
+  ): Promise<CompletePlanningResponse> => {
+    const response = await makeRequest(`/api/tasks/${taskId}/complete-planning`, {
+      method: 'POST',
+    });
+    return handleApiResponse<CompletePlanningResponse>(response);
   },
 
   reassign: async (

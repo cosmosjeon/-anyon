@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { KanbanCard } from '@/components/ui/shadcn-io/kanban';
 import { CheckCircle, Link, Loader2, XCircle } from 'lucide-react';
 import type { TaskWithAttemptStatus } from 'shared/types';
@@ -10,6 +10,8 @@ import { attemptsApi } from '@/lib/api';
 import type { SharedTaskRecord } from '@/hooks/useProjectTasks';
 import { UserAvatar } from './UserAvatar';
 import { useTranslation } from 'react-i18next';
+import NiceModal from '@ebay/nice-modal-react';
+import { PlanTaskDialog } from '@/components/dialogs/tasks/PlanTaskDialog';
 
 type Task = TaskWithAttemptStatus;
 
@@ -61,6 +63,20 @@ export function TaskCard({
       }
     },
     [task.parent_task_attempt, projectId, navigate, isNavigatingToParent]
+  );
+
+  const showPlanButton = task.status === 'todo' || task.status === 'planning';
+  const planButtonLabel = task.status === 'planning'
+    ? t('planDialog.continueButton', 'Continue planning')
+    : t('planDialog.planButton', 'Plan');
+  const planButtonVariant = task.status === 'planning' ? 'default' : 'outline';
+
+  const handlePlanClick = useCallback(
+    (event: MouseEvent) => {
+      event.stopPropagation();
+      NiceModal.show(PlanTaskDialog, { task });
+    },
+    [task]
   );
 
   const localRef = useRef<HTMLDivElement>(null);
@@ -144,6 +160,19 @@ export function TaskCard({
                 ? `${task.description.substring(0, 130)}...`
                 : task.description}
             </p>
+          )}
+          {showPlanButton && (
+            <div className="flex justify-end pt-2">
+              <Button
+                size="sm"
+                variant={planButtonVariant}
+                onPointerDown={(event) => event.stopPropagation()}
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={handlePlanClick}
+              >
+                {planButtonLabel}
+              </Button>
+            </div>
           )}
         </div>
       </div>

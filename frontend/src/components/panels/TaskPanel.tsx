@@ -105,6 +105,14 @@ const TaskPanel = ({ task }: TaskPanelProps) => {
             {descriptionContent && (
               <MarkdownRenderer content={descriptionContent} />
             )}
+            {task.plan_summary && (
+              <div className="rounded-md border bg-muted/30 p-4 space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground">
+                  {t('planDialog.summaryHeading', 'Clarified requirements')}
+                </h3>
+                <MarkdownRenderer content={task.plan_summary} />
+              </div>
+            )}
           </div>
 
           <div className="mt-6 flex-shrink-0 space-y-4">

@@ -20,4 +20,5 @@ pub mod oauth_credentials;
 pub mod pr_monitor;
 pub mod remote_client;
 pub mod share;
+pub mod task_clarification;
 pub mod worktree_manager;

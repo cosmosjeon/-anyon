@@ -562,6 +562,11 @@ npm run test:e2e
 - ✅ AI 질문 생성: < 3초
 - ✅ 사용자 만족도: 4.5/5 이상
 
+#### 2025-11-XX 진행 현황 업데이트
+- 프런트엔드 PlanTaskDialog, Kanban `planning` 컬럼, TaskPanel 요약 표시를 모두 구현하고 `pnpm run frontend:check`/`pnpm run frontend:lint`를 통과했습니다.
+- Plan Stage API(`start-planning`, `plan-answers`, `complete-planning`)와 공유 타입 재생성을 마무리하여 Todo/Planning 구간 전환이 안정화되었습니다.
+- 남은 Phase 0 항목: 품질 리뷰(샘플 5건)와 AI/GitHub 토큰 체크리스트. 이 두 항목을 완료해야 Phase 0을 “Done”으로 전환할 수 있습니다.
+
 ---
 
 ## Phase 1: 핵심 자동화 (2주)

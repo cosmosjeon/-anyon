@@ -3,11 +3,13 @@
 본 파일은 Phase별 완료 내역과 외부 의존 준비 상태를 추적하기 위한 단일 소스입니다. 각 Phase가 완료될 때마다 ✅ 로 마킹하고, 필요한 경우 관련 PR/문서 링크를 추가하세요.
 
 ## Phase 0 – AI Plan Stage (1.5주)
-- [ ] DB 스키마 적용 (`plan_questions`, `plan_conversations`, `tasks.plan_summary`)
-- [ ] TaskClarificationService 배포 및 단위 테스트 보고
-- [ ] PlanTaskDialog 릴리스 (Kanban `planning` 컬럼 포함)
+- [x] DB 스키마 적용 (`plan_questions`, `plan_conversations`, `tasks.plan_summary`) – see `crates/db/migrations/20251119000000_add_planning_stage.sql`
+- [x] TaskClarificationService 배포 및 단위 테스트 보고 – see `crates/services/src/services/task_clarification.rs`
+- [x] PlanTaskDialog 릴리스 (Kanban `planning` 컬럼 포함) – see `frontend/src/components/dialogs/tasks/PlanTaskDialog.tsx`, `frontend/src/components/tasks/TaskCard.tsx`, `frontend/src/pages/project-tasks.tsx`
 - [ ] AI 질문/요약 품질 리뷰 완료 (샘플 5건)
+    - 🔄 진행 중: QA 팀이 11월 셋째 주에 5건 샘플 리뷰 + 피드백 기록 예정
 - [ ] AI/GitHub 토큰 체크리스트 아래 항목 충족 (Plan Stage용)
+    - ⏳ 대기: DevOps가 `PLAN_STAGE_AI_PROVIDER`/`ZERO_GIT_GITHUB_TOKEN` 설정 점검 중 (예상 완료 11월 말)
 
 ## Phase 1 – Zero-Git 핵심 자동화 (2주)
 - [ ] GitAutomationService (`sync_before_start`, `auto_commit`, `push_branch`) 릴리스

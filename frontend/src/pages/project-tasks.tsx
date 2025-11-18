@@ -78,6 +78,7 @@ type Task = TaskWithAttemptStatus;
 
 const TASK_STATUSES = [
   'todo',
+  'planning',
   'inprogress',
   'inreview',
   'done',
@@ -351,6 +352,7 @@ export function ProjectTasks() {
   const kanbanColumns = useMemo(() => {
     const columns: Record<TaskStatus, KanbanColumnItem[]> = {
       todo: [],
+      planning: [],
       inprogress: [],
       inreview: [],
       done: [],
@@ -446,6 +448,7 @@ export function ProjectTasks() {
   const visibleTasksByStatus = useMemo(() => {
     const map: Record<TaskStatus, Task[]> = {
       todo: [],
+      planning: [],
       inprogress: [],
       inreview: [],
       done: [],

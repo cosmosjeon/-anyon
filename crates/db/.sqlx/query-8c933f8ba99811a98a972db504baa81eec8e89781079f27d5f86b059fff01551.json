@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE plan_conversations\n               SET answer = $2,\n                   answered_by = $3,\n                   answered_at = datetime('now', 'subsec')\n               WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "8c933f8ba99811a98a972db504baa81eec8e89781079f27d5f86b059fff01551"
+}

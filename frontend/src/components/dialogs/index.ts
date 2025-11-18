@@ -81,6 +81,7 @@ export {
   StopShareTaskDialog,
   type StopShareTaskDialogProps,
 } from './tasks/StopShareTaskDialog';
+export { PlanTaskDialog } from './tasks/PlanTaskDialog';
 
 // Settings dialogs
 export {

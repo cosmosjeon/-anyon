@@ -4,7 +4,7 @@ use anyhow;
 use axum::{
     Extension, Json, Router,
     extract::{
-        Query, State,
+        Path, Query, State,
         ws::{WebSocket, WebSocketUpgrade},
     },
     http::StatusCode,
@@ -14,7 +14,7 @@ use axum::{
 };
 use db::models::{
     image::TaskImage,
-    task::{CreateTask, Task, TaskWithAttemptStatus, UpdateTask},
+    task::{CreateTask, Task, TaskStatus, TaskWithAttemptStatus, UpdateTask},
     task_attempt::{CreateTaskAttempt, TaskAttempt},
 };
 use deployment::Deployment;
@@ -24,6 +24,7 @@ use serde::{Deserialize, Serialize};
 use services::services::{
     container::{ContainerService, WorktreeCleanupData, cleanup_worktrees_direct},
     share::ShareError,
+    task_clarification::{ClarificationQuestion, TaskClarificationService},
 };
 use sqlx::Error as SqlxError;
 use ts_rs::TS;
@@ -140,6 +141,45 @@ pub struct CreateAndStartTaskRequest {
     pub task: CreateTask,
     pub executor_profile_id: ExecutorProfileId,
     pub base_branch: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+pub struct StartPlanningResponse {
+    pub task_status: TaskStatus,
+    pub questions: Vec<ClarificationQuestion>,
+    pub existing_answers: Vec<PlanAnswerInput>,
+    pub plan_summary: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+pub struct PlanAnswerInput {
+    pub question_id: String,
+    pub answer: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+pub struct SavePlanAnswersRequest {
+    pub answers: Vec<PlanAnswerInput>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+pub struct SavePlanAnswersResponse {
+    pub saved_count: usize,
+    pub is_complete: bool,
+    pub plan_summary: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+pub struct PlanningSyncInfo {
+    pub synced: bool,
+    pub commits_pulled: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+pub struct CompletePlanningResponse {
+    pub task_status: TaskStatus,
+    pub plan_summary: String,
+    pub sync_info: Option<PlanningSyncInfo>,
 }
 
 pub async fn create_task_and_start(
@@ -373,6 +413,155 @@ pub async fn delete_task(
     Ok((StatusCode::ACCEPTED, ResponseJson(ApiResponse::success(()))))
 }
 
+pub async fn start_planning(
+    State(deployment): State<DeploymentImpl>,
+    Path(task_id): Path<Uuid>,
+) -> Result<ResponseJson<ApiResponse<StartPlanningResponse>>, ApiError> {
+    let db = deployment.db();
+    let clarification =
+        TaskClarificationService::new(db.clone(), deployment.clarification_executor());
+
+    let task = Task::find_by_id(&db.pool, task_id)
+        .await?
+        .ok_or_else(|| ApiError::Database(SqlxError::RowNotFound))?;
+
+    let (questions, existing_answers, plan_summary, notify_shared) = match task.status {
+        TaskStatus::Todo => {
+            let questions = clarification.generate_questions(&task).await?;
+            Task::update_status(&db.pool, task_id, TaskStatus::Planning).await?;
+            Task::mark_plan_started(&db.pool, task_id).await?;
+            (questions, Vec::new(), None, true)
+        }
+        TaskStatus::Planning => {
+            let mut stored = clarification.load_existing_questions(task.id).await?;
+            let mut answers = Vec::new();
+
+            if stored.is_empty() {
+                stored = clarification.generate_questions(&task).await?;
+                if task.plan_started_at.is_none() {
+                    Task::mark_plan_started(&db.pool, task_id).await?;
+                }
+            } else {
+                answers = clarification
+                    .load_saved_answers(task.id)
+                    .await?
+                    .into_iter()
+                    .map(|answer| PlanAnswerInput {
+                        question_id: answer.question_id,
+                        answer: answer.answer,
+                    })
+                    .collect();
+            }
+
+            (stored, answers, task.plan_summary.clone(), false)
+        }
+        _ => {
+            return Err(ApiError::BadRequest(
+                "Task must be in 'todo' or 'planning' status before planning".to_string(),
+            ));
+        }
+    };
+
+    if notify_shared {
+        if let Ok(publisher) = deployment.share_publisher() {
+            let _ = publisher.update_shared_task_by_id(task_id).await;
+        }
+    }
+
+    Ok(ResponseJson(ApiResponse::success(StartPlanningResponse {
+        task_status: TaskStatus::Planning,
+        questions,
+        existing_answers,
+        plan_summary,
+    })))
+}
+
+pub async fn save_plan_answers(
+    State(deployment): State<DeploymentImpl>,
+    Path(task_id): Path<Uuid>,
+    Json(request): Json<SavePlanAnswersRequest>,
+) -> Result<ResponseJson<ApiResponse<SavePlanAnswersResponse>>, ApiError> {
+    if request.answers.is_empty() {
+        return Err(ApiError::BadRequest(
+            "At least one answer must be provided".to_string(),
+        ));
+    }
+
+    let db = deployment.db();
+    let clarification =
+        TaskClarificationService::new(db.clone(), deployment.clarification_executor());
+
+    let task = Task::find_by_id(&db.pool, task_id)
+        .await?
+        .ok_or_else(|| ApiError::Database(SqlxError::RowNotFound))?;
+
+    for answer in &request.answers {
+        clarification
+            .save_answer(task_id, &answer.question_id, &answer.answer)
+            .await?;
+    }
+
+    let is_complete = clarification.is_plan_complete(task_id).await?;
+    let plan_summary = if is_complete {
+        let summary = clarification.generate_plan_summary(&task).await?;
+        Task::mark_plan_completed(&db.pool, task_id).await?;
+        Some(summary)
+    } else {
+        None
+    };
+
+    Ok(ResponseJson(ApiResponse::success(
+        SavePlanAnswersResponse {
+            saved_count: request.answers.len(),
+            is_complete,
+            plan_summary,
+        },
+    )))
+}
+
+pub async fn complete_planning(
+    State(deployment): State<DeploymentImpl>,
+    Path(task_id): Path<Uuid>,
+) -> Result<ResponseJson<ApiResponse<CompletePlanningResponse>>, ApiError> {
+    let db = deployment.db();
+    let clarification =
+        TaskClarificationService::new(db.clone(), deployment.clarification_executor());
+
+    let task = Task::find_by_id(&db.pool, task_id)
+        .await?
+        .ok_or_else(|| ApiError::Database(SqlxError::RowNotFound))?;
+
+    if task.status != TaskStatus::Planning {
+        return Err(ApiError::BadRequest(
+            "Task must be in 'planning' status to complete the plan".to_string(),
+        ));
+    }
+
+    if !clarification.is_plan_complete(task_id).await? {
+        return Err(ApiError::BadRequest(
+            "Please answer all required questions before starting development".to_string(),
+        ));
+    }
+
+    let plan_summary = if let Some(existing) = task.plan_summary.clone() {
+        existing
+    } else {
+        let summary = clarification.generate_plan_summary(&task).await?;
+        Task::mark_plan_completed(&db.pool, task_id).await?;
+        summary
+    };
+
+    Task::update_status(&db.pool, task_id, TaskStatus::InProgress).await?;
+
+    Ok(ResponseJson(ApiResponse::success(
+        CompletePlanningResponse {
+            task_status: TaskStatus::InProgress,
+            plan_summary,
+            sync_info: None,
+        },
+    )))
+}
+
 #[derive(Debug, Serialize, Deserialize, TS)]
 pub struct ShareTaskResponse {
     pub shared_task_id: Uuid,
@@ -411,9 +600,15 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
         .route("/", delete(delete_task))
         .route("/share", post(share_task));
 
+    let planning_router = Router::new()
+        .route("/start-planning", post(start_planning))
+        .route("/plan-answers", post(save_plan_answers))
+        .route("/complete-planning", post(complete_planning));
+
     let task_id_router = Router::new()
         .route("/", get(get_task))
         .merge(task_actions_router)
+        .merge(planning_router)
         .layer(from_fn_with_state(deployment.clone(), load_task_middleware));
 
     let inner = Router::new()

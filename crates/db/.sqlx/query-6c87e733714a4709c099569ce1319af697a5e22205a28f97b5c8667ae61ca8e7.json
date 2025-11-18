@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                    id as \"id!: Uuid\",\n                    task_id as \"task_id!: Uuid\",\n                    question_id,\n                    question_text,\n                    answer,\n                    answered_by,\n                    answered_at as \"answered_at!: DateTime<Utc>\"\n               FROM plan_conversations\n               WHERE task_id = $1\n               ORDER BY answered_at ASC",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "task_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "question_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "question_text",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "answer",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "answered_by",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "answered_at!: DateTime<Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "6c87e733714a4709c099569ce1319af697a5e22205a28f97b5c8667ae61ca8e7"
+}

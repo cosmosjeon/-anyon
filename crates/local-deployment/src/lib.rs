@@ -19,6 +19,7 @@ use services::services::{
     oauth_credentials::OAuthCredentials,
     remote_client::{RemoteClient, RemoteClientError},
     share::{RemoteSyncHandle, ShareConfig, SharePublisher},
+    task_clarification::{ClarificationExecutor, StubClarificationExecutor},
 };
 use tokio::sync::{Mutex, RwLock};
 use utils::{
@@ -49,6 +50,7 @@ pub struct LocalDeployment {
     drafts: DraftsService,
     share_publisher: Result<SharePublisher, RemoteClientNotConfigured>,
     share_sync_handle: Arc<Mutex<Option<RemoteSyncHandle>>>,
+    clarification_executor: Arc<dyn ClarificationExecutor>,
     share_config: Option<ShareConfig>,
     remote_client: Result<RemoteClient, RemoteClientNotConfigured>,
     auth_context: AuthContext,
@@ -190,6 +192,8 @@ impl Deployment for LocalDeployment {
 
         let drafts = DraftsService::new(db.clone(), image.clone());
         let file_search_cache = Arc::new(FileSearchCache::new());
+        let clarification_executor: Arc<dyn ClarificationExecutor> =
+            Arc::new(StubClarificationExecutor::default());
 
         let deployment = Self {
             config,
@@ -207,6 +211,7 @@ impl Deployment for LocalDeployment {
             drafts,
             share_publisher,
             share_sync_handle: share_sync_handle.clone(),
+            clarification_executor,
             share_config: share_config.clone(),
             remote_client,
             auth_context,
@@ -274,6 +279,10 @@ impl Deployment for LocalDeployment {
 
     fn drafts(&self) -> &DraftsService {
         &self.drafts
+    }
+
+    fn clarification_executor(&self) -> Arc<dyn ClarificationExecutor> {
+        self.clarification_executor.clone()
     }
 
     fn share_publisher(&self) -> Result<SharePublisher, RemoteClientNotConfigured> {

@@ -8,6 +8,32 @@
   "actions": {
     "addTask": "Add task"
   },
+  "planDialog": {
+    "title": "Plan task",
+    "description": "AI clarifies the task before any code is written.",
+    "status": {
+      "complete": "Complete",
+      "inProgress": "In progress"
+    },
+    "loading": "Generating questions...",
+    "noQuestions": "No clarification questions available.",
+    "planButton": "Plan",
+    "continueButton": "Continue planning",
+    "required": "Required",
+    "selectPlaceholder": "Select an option",
+    "answerPlaceholder": "Type your answer",
+    "summaryHeading": "Clarified requirements",
+    "requirementsHint": "All required answers must be provided before development can start.",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "saveError": "Could not save answer",
+    "startDevelopment": "Start development",
+    "errors": {
+      "loadFailed": "Failed to load planning data",
+      "saveFailed": "Failed to save answer",
+      "completeFailed": "Unable to start development"
+    }
+  },
   "filters": {
     "sharedToggleAria": "Toggle shared tasks",
     "sharedToggleTooltip": "Show/hide shared content"

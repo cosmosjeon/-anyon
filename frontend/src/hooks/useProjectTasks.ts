@@ -65,6 +65,7 @@ export const useProjectTasks = (projectId: string): UseProjectTasksResult => {
     const merged: Record<string, TaskWithAttemptStatus> = { ...localTasksById };
     const byStatus: Record<TaskStatus, TaskWithAttemptStatus[]> = {
       todo: [],
+      planning: [],
       inprogress: [],
       inreview: [],
       done: [],
@@ -95,6 +96,7 @@ export const useProjectTasks = (projectId: string): UseProjectTasksResult => {
   const sharedOnlyByStatus = useMemo(() => {
     const grouped: Record<TaskStatus, SharedTaskRecord[]> = {
       todo: [],
+      planning: [],
       inprogress: [],
       inreview: [],
       done: [],

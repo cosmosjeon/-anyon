@@ -13,7 +13,8 @@ use git2::Error as Git2Error;
 use services::services::{
     config::ConfigError, container::ContainerError, drafts::DraftsServiceError,
     git::GitServiceError, github_service::GitHubServiceError, image::ImageError,
-    remote_client::RemoteClientError, share::ShareError, worktree_manager::WorktreeError,
+    remote_client::RemoteClientError, share::ShareError, task_clarification::ClarificationError,
+    worktree_manager::WorktreeError,
 };
 use thiserror::Error;
 use utils::response::ApiResponse;
@@ -245,6 +246,25 @@ impl IntoResponse for ApiError {
         };
         let response = ApiResponse::<()>::error(&error_message);
         (status_code, Json(response)).into_response()
+    }
+}
+
+impl From<ClarificationError> for ApiError {
+    fn from(err: ClarificationError) -> Self {
+        match err {
+            ClarificationError::Database(db_err) => ApiError::Database(db_err),
+            ClarificationError::Executor(exec_err) => {
+                ApiError::BadRequest(format!("Clarification executor failed: {exec_err}"))
+            }
+            ClarificationError::InvalidResponse(msg)
+            | ClarificationError::QuestionNotFound(msg) => ApiError::BadRequest(msg),
+            ClarificationError::NoQuestions => {
+                ApiError::BadRequest("질문을 생성할 수 없습니다.".to_string())
+            }
+            ClarificationError::NoAnswers => {
+                ApiError::BadRequest("답변이 충분하지 않습니다.".to_string())
+            }
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id as \"id!: Uuid\", project_id as \"project_id!: Uuid\", title, description, status as \"status!: TaskStatus\", parent_task_attempt as \"parent_task_attempt: Uuid\", shared_task_id as \"shared_task_id: Uuid\", created_at as \"created_at!: DateTime<Utc>\", updated_at as \"updated_at!: DateTime<Utc>\"\n               FROM tasks \n               WHERE parent_task_attempt = $1\n               ORDER BY created_at DESC",
+  "query": "SELECT id as \"id!: Uuid\", project_id as \"project_id!: Uuid\", title, description, status as \"status!: TaskStatus\", plan_summary, plan_started_at as \"plan_started_at: DateTime<Utc>\", plan_completed_at as \"plan_completed_at: DateTime<Utc>\", parent_task_attempt as \"parent_task_attempt: Uuid\", shared_task_id as \"shared_task_id: Uuid\", created_at as \"created_at!: DateTime<Utc>\", updated_at as \"updated_at!: DateTime<Utc>\"\n               FROM tasks \n               WHERE rowid = $1",
   "describe": {
     "columns": [
       {
@@ -29,23 +29,38 @@
         "type_info": "Text"
       },
       {
-        "name": "parent_task_attempt: Uuid",
+        "name": "plan_summary",
         "ordinal": 5,
-        "type_info": "Blob"
+        "type_info": "Text"
       },
       {
-        "name": "shared_task_id: Uuid",
+        "name": "plan_started_at: DateTime<Utc>",
         "ordinal": 6,
-        "type_info": "Blob"
+        "type_info": "Text"
       },
       {
-        "name": "created_at!: DateTime<Utc>",
+        "name": "plan_completed_at: DateTime<Utc>",
         "ordinal": 7,
         "type_info": "Text"
       },
       {
-        "name": "updated_at!: DateTime<Utc>",
+        "name": "parent_task_attempt: Uuid",
         "ordinal": 8,
+        "type_info": "Blob"
+      },
+      {
+        "name": "shared_task_id: Uuid",
+        "ordinal": 9,
+        "type_info": "Blob"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!: DateTime<Utc>",
+        "ordinal": 11,
         "type_info": "Text"
       }
     ],
@@ -60,9 +75,12 @@
       false,
       true,
       true,
+      true,
+      true,
+      true,
       false,
       false
     ]
   },
-  "hash": "d4e3852cd9b482155c4b448adbac722a4dbb69a91ce309f39f9aa39368c30182"
+  "hash": "5f5f3ada7fad6a404cc0880183dbe33e77463593e0be702cb0ec58f274c8ae9c"
 }

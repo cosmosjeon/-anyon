@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO plan_questions (\n                    id,\n                    task_id,\n                    question_id,\n                    question_text,\n                    category,\n                    required,\n                    suggested_answers\n                ) VALUES ($1, $2, $3, $4, $5, $6, $7)\n                RETURNING\n                    id as \"id!: Uuid\",\n                    task_id as \"task_id!: Uuid\",\n                    question_id,\n                    question_text,\n                    category as \"category!: QuestionCategory\",\n                    required as \"required!: bool\",\n                    suggested_answers,\n                    created_at as \"created_at!: DateTime<Utc>\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "task_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "question_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "question_text",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "category!: QuestionCategory",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "required!: bool",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "suggested_answers",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 7,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "4164732055a7ef88796c942ae536e46710a6290ea853724f2c109cebdefb240c"
+}
